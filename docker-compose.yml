@@ -1,0 +1,42 @@
+version: "3.8"
+
+services:
+  betha-db:
+    build:
+      context: .
+      dockerfile: _postgres.dockerfile
+    image: betha-db
+    container_name: betha-db
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "15432:5432"
+    environment:
+      POSTGRES_DB: "${DB_DATABASE}"
+      POSTGRES_USER: "${DB_USERNAME}"
+      POSTGRES_PASSWORD: "${DB_PASSWORD}"
+      SERVICE_TAGS: production
+      SERVICE_NAME: postgres
+      PGDATA: /var/lib/postgresql/data/bethaDB/
+    volumes:
+      - angularDB:/var/lib/postgresql/data
+
+  nginx:
+    build:
+      context: .
+      dockerfile: _nginx.dockerfile
+    image: ubi-nginx
+    container_name: ubi-nginx
+    restart: unless-stopped
+    ports:
+      - "8081:80"
+      - "4443:443"
+    volumes:
+      - .:/var/www
+    depends_on: 
+      - angular
+
+networks:
+  default:
+    external:
+      name: betha-network
